@@ -76,10 +76,10 @@ class BallBalancingTable(Env):
     force_step: The magnitude of force each servomotor can apply at a given timestep, this can be changed along with dt to represent the actual servomotors' performance if the real system specifications are provided
     dt: the time step to be used in this environment
     angle_limit: The maximum angle the table can produce (models a physical limitation)
-    
+    force_limit: The maximum force the servomotors can produce
     """
 
-    def __init__(self, sensor_noise: bool=False, sensor_std: float = 0.5, sensor_sensitivity:float=2, ball_mass: float=1, table_mass:float=5, table_length: float=0.3, dt:float=0.1, force_step: float=1, angle_limit: float=30) -> None:
+    def __init__(self, sensor_noise: bool=False, sensor_std: float = 0.5, sensor_sensitivity:float=2, ball_mass: float=1, table_mass:float=5, table_length: float=0.3, dt:float=0.1, force_step: float=1, angle_limit: float=30, force_limit: float=10) -> None:
         # Gymnasium Params
         self.np_random = seeding.np_random()
         self.action_space = spaces.Discrete(len(Action))
@@ -95,6 +95,7 @@ class BallBalancingTable(Env):
         self.sensor_std = sensor_std
         self.sensor_sensitivity = sensor_sensitivity
         self.angle_limit = angle_limit
+        self.force_limit = force_limit
         
         # Variables for Table Dynamics
         self.table_inertia = (4.0/12.0)*self.table_mass*(self.r**2)
