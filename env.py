@@ -16,7 +16,7 @@ def register_env() -> None:
 
 class Action(IntEnum):
     """Represents an action for the Ball Balancing Table at a single time step to control the 2 servomotors. 
-    We will assume that each servomotor can move in either direction (towards the table or away from it) and either apply force, retract and lessen the force, or do nothing. 
+    We will assume that each servomotor can move in either direction (towards the table or away from it) and either apply force, retract and lessen the force, or do nothing.
     The applied force will be discretized for each time step to add or remove 'x' N (or do nothing)"""
     # X_X --> Action for Motor 1 _ Action for Motor 2
     # N --> Nothing
