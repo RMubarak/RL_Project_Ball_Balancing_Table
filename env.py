@@ -9,7 +9,7 @@ import numpy as np
 def register_env() -> None:
     """Register custom gym environment so that we can use `gym.make()`
 
-    This will register the custom environment with Gymnasium. We are using this for compatibility and reproducability.  
+    We are using this for compatibility and reproducability.  
     """
     register(id="Ball-Balancing-Table-v0", entry_point="env:BallBalancingTable")
 
