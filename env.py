@@ -79,7 +79,7 @@ class BallBalancingTable(Env):
     force_limit: The maximum force the servomotors can produce
     """
 
-    def __init__(self, sensor_noise: bool=False, sensor_std: float = 0.5, sensor_sensitivity:float=2, ball_mass: float=1, table_mass:float=5, table_length: float=0.3, dt:float=0.1, force_step: float=1, angle_limit: float=30, force_limit: float=10) -> None:
+    def __init__(self, sensor_noise: bool=False, sensor_std: float = 0.5, sensor_sensitivity:float=2, ball_mass: float=1, table_mass:float=5, table_length: float=0.3, dt:float=0.1, force_step: float=1, angle_limit: float=30, force_limit: float=10, max_damping:float=3) -> None:
         # Gymnasium Params
         self.np_random = seeding.np_random()
         self.action_space = spaces.Discrete(len(Action))
@@ -96,6 +96,7 @@ class BallBalancingTable(Env):
         self.sensor_sensitivity = sensor_sensitivity
         self.angle_limit = angle_limit
         self.force_limit = force_limit
+        self.max_damping = max_damping # The max resistive forces acting against the servomotors in each direction (natural damping from the table). In reality, this will require good knowledge of the system or (more efficiently) will be calculated from experiment data where you deduce the system damping based on angle changes when you apply certain forces. The damping force will generally equal 30% of the force output up to the max damping.
         
         # Variables for Table Dynamics
         self.table_inertia = (4.0/12.0)*self.table_mass*(self.r**2)
@@ -103,9 +104,7 @@ class BallBalancingTable(Env):
         self.g = 9.81 
         # The current forces acting on the table (Motor 1 Force, Motor 2 Force)
         self.force1 = 0.0
-        self.force2 = 0.0
-        # The true resistive forces acting against the servomotors in each direction (natural damping or resistance from the table). In reality, this will require good knowledge of the system or (more efficiently) will be calculated from experiment data where you deduce the system resistance based on angle changes when you apply certain forces
-        self.resistance = 2.0 
+        self.force2 = 0.0 
         # Angular accelaration of the table about x and y directions
         self.theta_x_acc = 0
         self.theta_y_acc = 0
@@ -199,9 +198,13 @@ class BallBalancingTable(Env):
         However, the simulation also checks whether the new angle is producable given the table angular limits before updating
         if it cannot be done, we assume the table angles remain the same and the force does not affect it (represents physical limits)
         """
+        # Calculating the damping force of the system, usually =30% of the given force but limited at self.max_damping
+        damp1 = np.clip(self.force1*0.3, -1*self.max_damping, self.max_damping)
+        damp2 = np.clip(self.force2*0.3, -1*self.max_damping, self.max_damping)
+        
         # Using the equations of motion to determine the angular accelaration of the table based on the current forces
-        x_acc = (self.r*(self.force1 - self.resistance) + self.ball_mass*self.g*self.x)/self.table_inertia
-        y_acc = (self.r*(self.force2 - self.resistance) + self.ball_mass*self.g*self.y)/self.table_inertia
+        x_acc = (self.r*(self.force1 - damp1) + self.ball_mass*self.g*self.x)/self.table_inertia
+        y_acc = (self.r*(self.force2 - damp2) + self.ball_mass*self.g*self.y)/self.table_inertia
         
         # Calculates the new angular velocity based on the accelarations
         x_vel = self.theta_x_vel + x_acc*self.dt
