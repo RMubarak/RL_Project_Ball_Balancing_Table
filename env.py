@@ -242,8 +242,8 @@ class BallBalancingTable(Env):
         Win conditions are whether ball position is within 2cm of the origin (0,0) and has a relatively low velocity and accelaration
         """
         b1 = self.in_bounds(self.x, 0.02) and self.in_bounds(self.y, 0.02)
-        b2 = self.in_bounds(self.ball_vel_x, 0.001) and self.in_bounds(self.ball_vel_y, 0.001)
-        b3 = self.in_bounds(self.ball_acc_x, 0.001) and self.in_bounds(self.ball_acc_y, 0.001)
+        b2 = self.in_bounds(self.ball_vel_x, 0.0001) and self.in_bounds(self.ball_vel_y, 0.0001)
+        b3 = self.in_bounds(self.ball_acc_x, 0.0001) and self.in_bounds(self.ball_acc_y, 0.0001)
         return b1 and b2 and b3
 
     def in_bounds(self, x:float, limit:float) -> bool:
@@ -266,7 +266,7 @@ class BallBalancingTable(Env):
         return [seed]
 
 
-    def reset(self, starting_ball_pos: Tuple[float, float]=(0,0), starting_ball_vel: Tuple[float, float]=(0,0)) -> Tuple[int, int]:
+    def reset(self, starting_ball_pos: Tuple[float, float]=(0,0), starting_ball_vel: Tuple[float, float]=(0.005,-0.005)) -> Tuple[int, int]:
         """Resets agent to the starting position. Can also take in a ball position and velocity to start at.
 
         Returns:
