@@ -79,7 +79,7 @@ class BallBalancingTable(Env):
     force_limit: The maximum force the servomotors can produce
     """
 
-    def __init__(self, sensor_noise: bool=False, sensor_std: float = 0.5, sensor_sensitivity:float=2, ball_mass: float=1, table_mass:float=5, table_length: float=0.3, dt:float=0.1, force_step: float=1, angle_limit: float=30, force_limit: float=10, max_damping:float=3) -> None:
+    def __init__(self, sensor_noise: bool=False, sensor_std: float = 0.005, sensor_sensitivity:float=2, ball_mass: float=1, table_mass:float=5, table_length: float=0.3, dt:float=0.1, force_step: float=0.5, angle_limit: float=30, force_limit: float=10, max_damping:float=3) -> None:
         # Gymnasium Params
         self.np_random = seeding.np_random()
         self.action_space = spaces.Discrete(len(Action))
@@ -211,20 +211,20 @@ class BallBalancingTable(Env):
         y_vel = self.theta_y_vel + y_acc*self.dt  
         
         # Calculates the new angles of the table around the x and y axes
-        x = self.theta_x + x_vel*self.dt
-        y = self.theta_y + y_vel*self.dt
+        theta_x = self.theta_x + x_vel*self.dt
+        theta_y = self.theta_y + y_vel*self.dt
         
         # Sets the new theta_x variables if within limits
-        if self.in_bounds(x, self.angle_limit):
+        if self.in_bounds(theta_x, self.angle_limit):
             self.theta_x_acc = x_acc
             self.theta_x_vel = x_vel
-            self.x = x
+            self.theta_x = theta_x
         
         # Sets the new theta_y variables if within limits
-        if self.in_bounds(y, self.angle_limit):
+        if self.in_bounds(theta_y, self.angle_limit):
             self.theta_y_acc = y_acc
             self.theta_y_vel = y_vel
-            self.y = y
+            self.theta_y = theta_y
     
     def sense_ball(self):
         """ Acts as the pressure sensor in the glass surface, has a certain sensitivity and can have gaussian noise
@@ -241,7 +241,7 @@ class BallBalancingTable(Env):
         """Returns whether the game has been won or not (reached steady state)
         Win conditions are whether ball position is within 2cm of the origin (0,0) and has a relatively low velocity and accelaration
         """
-        b1 = self.in_bounds(self.x, 0.02) and self.in_bounds(self.y, 0.02)
+        b1 = self.in_bounds(self.x, 0.01) and self.in_bounds(self.y, 0.01)
         b2 = self.in_bounds(self.ball_vel_x, 0.0001) and self.in_bounds(self.ball_vel_y, 0.0001)
         b3 = self.in_bounds(self.ball_acc_x, 0.0001) and self.in_bounds(self.ball_acc_y, 0.0001)
         return b1 and b2 and b3
@@ -266,14 +266,17 @@ class BallBalancingTable(Env):
         return [seed]
 
 
-    def reset(self, starting_ball_pos: Tuple[float, float]=(0,0), starting_ball_vel: Tuple[float, float]=(0.005,-0.005)) -> Tuple[int, int]:
+    def reset(self, starting_ball_pos: Tuple[float, float]=(0,0), starting_ball_vel: Tuple[float, float]=(0.01,-0.01)) -> Tuple[int, int]:
         """Resets agent to the starting position. Can also take in a ball position and velocity to start at.
 
         Returns:
             observation (Tuple[int,int]): returns the initial observation
         """
-        self.ball_pos = starting_ball_pos
-        self.ball_vel = starting_ball_vel
+        self.x = starting_ball_pos[0]
+        self.y = starting_ball_pos[1]
+        self.ball_pos = (self.x, self.y)
+        self.ball_vel_x = starting_ball_vel[0]
+        self.ball_vel_y = starting_ball_vel[1]
         return self.ball_pos
     
 
