@@ -79,7 +79,7 @@ class BallBalancingTable(Env):
     force_limit: The maximum force the servomotors can produce
     """
 
-    def __init__(self, sensor_noise: bool=False, sensor_std: float = 0.005, sensor_sensitivity:float=2, ball_mass: float=1, table_mass:float=5, table_length: float=0.3, dt:float=0.1, force_step: float=0.5, angle_limit: float=30, force_limit: float=10, max_damping:float=3) -> None:
+    def __init__(self, sensor_noise: bool=False, sensor_std: float = 0.005, sensor_sensitivity:float=2, ball_mass: float=0.5, table_mass:float=10, table_length: float=0.3, dt:float=0.1, force_step: float=0.5, angle_limit: float=30, force_limit: float=10, max_damping:float=3) -> None:
         # Gymnasium Params
         self.np_random = seeding.np_random()
         self.action_space = spaces.Discrete(len(Action))
@@ -277,6 +277,13 @@ class BallBalancingTable(Env):
         self.ball_pos = (self.x, self.y)
         self.ball_vel_x = starting_ball_vel[0]
         self.ball_vel_y = starting_ball_vel[1]
+        self.theta_x= 0
+        self.theta_y= 0
+        self.theta_x_vel= 0
+        self.theta_y_vel= 0
+        self.theta_x_acc= 0
+        self.theta_y_acc = 0
+        
         return self.ball_pos
     
 
