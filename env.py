@@ -67,6 +67,7 @@ class BallBalancingTable(Env):
     This will serve as our model for the ball balancing table. The init method can take in boolean flags to add gaussian noise to the system
     
     __init__ Params:
+    time_limit: A time limit to win if you keep the ball on the table.
     sensor_noise: A boolean to determine whether to add sensor noise
     sensor_std: Standard deviation of the normal distribution to represent sensor noise
     sensor_sensitivity: The decimal places representing the sensitivity of the table's pressure sensor (readings are in m)
@@ -79,12 +80,13 @@ class BallBalancingTable(Env):
     force_limit: The maximum force the servomotors can produce
     """
 
-    def __init__(self, sensor_noise: bool=False, sensor_std: float = 0.005, sensor_sensitivity:float=2, ball_mass: float=0.5, table_mass:float=10, table_length: float=0.5, dt:float=0.1, force_step: float=100, angle_limit: float=30, force_limit: float=600, max_damping:float=3) -> None:
+    def __init__(self, time_limit: float=5.0, sensor_noise: bool=False, sensor_std: float = 0.005, sensor_sensitivity:float=2, ball_mass: float=0.5, table_mass:float=10, table_length: float=0.5, dt:float=0.1, force_step: float=100, angle_limit: float=30, force_limit: float=600, max_damping:float=30) -> None:
         # Gymnasium Params
         self.np_random = seeding.np_random()
         self.action_space = spaces.Discrete(len(Action))
         
         # Input Params
+        self.time_limit = time_limit
         self.ball_mass = ball_mass
         self.table_mass = table_mass
         self.dt = dt
@@ -96,7 +98,7 @@ class BallBalancingTable(Env):
         self.sensor_sensitivity = sensor_sensitivity
         self.angle_limit = angle_limit
         self.force_limit = force_limit
-        self.max_damping = max_damping # The max resistive forces acting against the servomotors in each direction (natural damping from the table). In reality, this will require good knowledge of the system or (more efficiently) will be calculated from experiment data where you deduce the system damping based on angle changes when you apply certain forces. The damping force will generally equal 30% of the force output up to the max damping.
+        self.max_damping = force_limit*0.3 # The max resistive forces acting against the servomotors in each direction (natural damping from the table). In reality, this will require good knowledge of the system or (more efficiently) will be calculated from experiment data where you deduce the system damping based on angle changes when you apply certain forces. The damping force will generally equal 30% of the force output up to the max damping.
         
         # Variables for Table Dynamics
         self.table_inertia = (4.0/12.0)*self.table_mass*(self.r**2)
@@ -235,9 +237,8 @@ class BallBalancingTable(Env):
     def sense_ball(self):
         """ Acts as the pressure sensor in the glass surface, has a certain sensitivity and can have gaussian noise
         """ 
-        # self.ball_pos = (round(self.x, self.sensor_sensitivity), round(self.y, self.sensor_sensitivity))
-        self.ball_pos = (round(self.x, self.sensor_sensitivity), round(self.y, self.sensor_sensitivity), round(self.ball_vel_x, self.sensor_sensitivity),
-                                                                                                               round(self.ball_vel_y, self.sensor_sensitivity))
+        self.ball_pos = (round(self.x, self.sensor_sensitivity), round(self.y, self.sensor_sensitivity))
+        self.ball_pos = (round(self.x, self.sensor_sensitivity), round(self.y, self.sensor_sensitivity), round(self.ball_vel_x, self.sensor_sensitivity), round(self.ball_vel_y, self.sensor_sensitivity))
         
         # If we want to add noise to the sensor
         if self.sensor_noise:
@@ -252,7 +253,7 @@ class BallBalancingTable(Env):
         # b1 = self.in_bounds(self.x, 0.01) and self.in_bounds(self.y, 0.01)
         # b2 = self.in_bounds(self.ball_vel_x, 0.0001) and self.in_bounds(self.ball_vel_y, 0.0001)
         # b3 = self.in_bounds(self.ball_acc_x, 0.0001) and self.in_bounds(self.ball_acc_y, 0.0001)
-        return self.t > 5
+        return self.t > self.time_limit
 
     def in_bounds(self, x:float, limit:float) -> bool:
         """Helper method that checks if the given x value is within +/- the given limit
