@@ -27,12 +27,12 @@ class Action(IntEnum):
     N_D = 2
     
     U_N = 3
-    U_U = 4
-    U_D = 5
+    # U_U = 4
+    # U_D = 5
     
-    D_N = 6
-    D_U = 7
-    D_D = 8
+    D_N = 4
+    # D_U = 7
+    # D_D = 8
 
 
 def actions_to_forces(action: Action, force_step: float) -> Tuple[int, int]:
@@ -50,12 +50,12 @@ def actions_to_forces(action: Action, force_step: float) -> Tuple[int, int]:
         Action.N_D: (0, -1*force_step),
         
         Action.U_N: (force_step, 0),
-        Action.U_U: (force_step, force_step),
-        Action.U_D: (force_step, -1*force_step),
+        # Action.U_U: (force_step, force_step),
+        # Action.U_D: (force_step, -1*force_step),
         
         Action.D_N: (-1*force_step, 0),
-        Action.D_U: (-1*force_step, force_step),
-        Action.D_D: (-1*force_step, -1*force_step),
+        # Action.D_U: (-1*force_step, force_step),
+        # Action.D_D: (-1*force_step, -1*force_step),
         
     }
     return mapping[action]
@@ -79,7 +79,7 @@ class BallBalancingTable(Env):
     force_limit: The maximum force the servomotors can produce
     """
 
-    def __init__(self, sensor_noise: bool=False, sensor_std: float = 0.005, sensor_sensitivity:float=2, ball_mass: float=0.5, table_mass:float=10, table_length: float=0.3, dt:float=0.1, force_step: float=0.5, angle_limit: float=30, force_limit: float=10, max_damping:float=3) -> None:
+    def __init__(self, sensor_noise: bool=False, sensor_std: float = 0.005, sensor_sensitivity:float=2, ball_mass: float=0.5, table_mass:float=10, table_length: float=0.5, dt:float=0.1, force_step: float=100, angle_limit: float=30, force_limit: float=600, max_damping:float=3) -> None:
         # Gymnasium Params
         self.np_random = seeding.np_random()
         self.action_space = spaces.Discrete(len(Action))
@@ -123,6 +123,8 @@ class BallBalancingTable(Env):
         # Ball position
         self.x = 0.0
         self.y = 0.0
+        # Game time
+        self.t = 0
         
         # Game state 
         self.ball_pos = (self.x,self.y)
@@ -144,9 +146,9 @@ class BallBalancingTable(Env):
             info (dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning). Not used in this simulation.
         """
         # Setting the rewards for the game
-        reward_standard = -1 # Standard reward for each time step
+        reward_standard = 1 # Standard reward for each time step
         reward_loss = -100 # Reward for losing (ball falling off)
-        reward_win = 100
+        reward_win = 1000
         
         # Gets the change is servomotor forces from the action and calculates new forces
         force_changes = actions_to_forces(action, self.force_step)
@@ -167,12 +169,16 @@ class BallBalancingTable(Env):
         # The true position will not be returned to the agent, but instead the sensed x and y positions only
         self.sense_ball()
         
+        self.t += self.dt
+        
         # If the ball falls off the table, return an ended game with negative rewards
         if not self.in_bounds(self.x, self.r) or not self.in_bounds(self.y, self.r):
+            self.reset()
             return self.ball_pos, reward_loss, True, {}
         
         # If the ball reaches steady state
         if self.won_game():
+            self.reset()
             return self.ball_pos, reward_win, True, {}
         
         return self.ball_pos, reward_standard, False, {}
@@ -182,8 +188,8 @@ class BallBalancingTable(Env):
         """Updates the ball accelaration, velocity, and position based on system dynamics
         """
         # Using equations of motion to determine the current ball accelarations
-        self.ball_acc_x = (2.0/3.0)*self.g*np.sin(self.theta_x)
-        self.ball_acc_y = (2.0/3.0)*self.g*np.sin(self.theta_y)
+        self.ball_acc_x = (2.0/3.0)*self.g*np.sin(np.deg2rad(self.theta_x))
+        self.ball_acc_y = (2.0/3.0)*self.g*np.sin(np.deg2rad(self.theta_y))
         
         # Calculates ball velocity based on accelaration
         self.ball_vel_x = self.ball_vel_x + self.ball_acc_x*self.dt
@@ -198,9 +204,9 @@ class BallBalancingTable(Env):
         However, the simulation also checks whether the new angle is producable given the table angular limits before updating
         if it cannot be done, we assume the table angles remain the same and the force does not affect it (represents physical limits)
         """
-        # Calculating the damping force of the system, usually =30% of the given force but limited at self.max_damping
-        damp1 = np.clip(self.force1*0.3, -1*self.max_damping, self.max_damping)
-        damp2 = np.clip(self.force2*0.3, -1*self.max_damping, self.max_damping)
+        # Calculating the damping force of the system, usually =10% of the given force but limited at self.max_damping
+        damp1 = np.clip(self.force1*0.1, -1*self.max_damping, self.max_damping)
+        damp2 = np.clip(self.force2*0.1, -1*self.max_damping, self.max_damping)
         
         # Using the equations of motion to determine the angular accelaration of the table based on the current forces
         x_acc = (self.r*(self.force1 - damp1) + self.ball_mass*self.g*self.x)/self.table_inertia
@@ -229,7 +235,9 @@ class BallBalancingTable(Env):
     def sense_ball(self):
         """ Acts as the pressure sensor in the glass surface, has a certain sensitivity and can have gaussian noise
         """ 
-        self.ball_pos = (round(self.x, self.sensor_sensitivity), round(self.y, self.sensor_sensitivity))
+        # self.ball_pos = (round(self.x, self.sensor_sensitivity), round(self.y, self.sensor_sensitivity))
+        self.ball_pos = (round(self.x, self.sensor_sensitivity), round(self.y, self.sensor_sensitivity), round(self.ball_vel_x, self.sensor_sensitivity),
+                                                                                                               round(self.ball_vel_y, self.sensor_sensitivity))
         
         # If we want to add noise to the sensor
         if self.sensor_noise:
@@ -241,10 +249,10 @@ class BallBalancingTable(Env):
         """Returns whether the game has been won or not (reached steady state)
         Win conditions are whether ball position is within 2cm of the origin (0,0) and has a relatively low velocity and accelaration
         """
-        b1 = self.in_bounds(self.x, 0.01) and self.in_bounds(self.y, 0.01)
-        b2 = self.in_bounds(self.ball_vel_x, 0.0001) and self.in_bounds(self.ball_vel_y, 0.0001)
-        b3 = self.in_bounds(self.ball_acc_x, 0.0001) and self.in_bounds(self.ball_acc_y, 0.0001)
-        return b1 and b2 and b3
+        # b1 = self.in_bounds(self.x, 0.01) and self.in_bounds(self.y, 0.01)
+        # b2 = self.in_bounds(self.ball_vel_x, 0.0001) and self.in_bounds(self.ball_vel_y, 0.0001)
+        # b3 = self.in_bounds(self.ball_acc_x, 0.0001) and self.in_bounds(self.ball_acc_y, 0.0001)
+        return self.t > 5
 
     def in_bounds(self, x:float, limit:float) -> bool:
         """Helper method that checks if the given x value is within +/- the given limit
@@ -266,7 +274,7 @@ class BallBalancingTable(Env):
         return [seed]
 
 
-    def reset(self, starting_ball_pos: Tuple[float, float]=(0,0), starting_ball_vel: Tuple[float, float]=(0.01,-0.01)) -> Tuple[int, int]:
+    def reset(self, starting_ball_pos: Tuple[float, float]=(0,0), starting_ball_vel: Tuple[float, float]=(0.01,-0.01)):
         """Resets agent to the starting position. Can also take in a ball position and velocity to start at.
 
         Returns:
@@ -274,7 +282,6 @@ class BallBalancingTable(Env):
         """
         self.x = starting_ball_pos[0]
         self.y = starting_ball_pos[1]
-        self.ball_pos = (self.x, self.y)
         self.ball_vel_x = starting_ball_vel[0]
         self.ball_vel_y = starting_ball_vel[1]
         self.theta_x= 0
@@ -283,7 +290,9 @@ class BallBalancingTable(Env):
         self.theta_y_vel= 0
         self.theta_x_acc= 0
         self.theta_y_acc = 0
+        self.t = 0
         
+        self.ball_pos = (self.x, self.y, self.ball_vel_x, self.ball_vel_y)
         return self.ball_pos
     
 
