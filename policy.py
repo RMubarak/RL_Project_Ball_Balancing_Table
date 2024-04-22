@@ -22,9 +22,12 @@ def create_epsilon_policy(Q: defaultdict, epsilon: float) -> Callable:
         if np.random.random() < epsilon:
             action = np.random.choice(num_actions)
         else:
-            action = np.max(Q[state])
-            max_action = np.argwhere(Q[state]==action).flatten()
-            action = np.random.choice(max_action)
+            try: # In case the state has not been seen before
+                action = np.max(Q[state])
+                max_action = np.argwhere(Q[state]==action).flatten()
+                action = np.random.choice(max_action)
+            except:
+                action = np.random.choice(num_actions)
         return action
 
     return get_action

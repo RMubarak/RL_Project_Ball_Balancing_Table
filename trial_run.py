@@ -83,17 +83,15 @@ b = BallBalancingTable()
 steps, rewards, Q, win_perc = q_learning_trial_run(b, num_episodes, 0.99, 0.01, 0.5)
 print("Win Percentage: " + str(win_perc*100) + "%")
 
-# plt.plot(rewards)
-# plt.xlabel("Episodes")
-# plt.ylabel("Rewards")
-# plt.show()
-# plt.figure()
-# plt.plot(steps)
-# plt.xlabel("Steps")
-# plt.ylabel("Total # of Episodes")
-# plt.show()
+plt.plot(rewards)
+plt.xlabel("Episodes")
+plt.ylabel("Rewards")
+plt.show()
+plt.figure()
+plt.plot(steps)
+plt.xlabel("Steps")
+plt.ylabel("Total # of Episodes")
+plt.show()
 
-fin_Q = dict(Q)
-with open('Policies/q_learning.pickle', 'wb') as f:
-    pickle.dump(fin_Q, f)
+
 
