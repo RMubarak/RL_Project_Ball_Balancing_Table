@@ -1,13 +1,22 @@
+from env import BallBalancingTable
+import matplotlib.pyplot as plt
 import gym
 from collections import defaultdict
 import numpy as np
-from typing import Callable, Tuple,Optional
 from env import  *
 from policy import *
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+import pickle
 
-def q_learning(
+'''
+A Test run for Q learning. This was used to generate the results for the trial run.
+
+To regenerate trial run data, please set the num_episodes below and run this in a terminal. 
+'''
+num_episodes = 1000
+
+def q_learning_trial_run(
     env: gym.Env,
     tot_episodes: int,
     gamma: float,
@@ -68,3 +77,23 @@ def q_learning(
     # Win Percentage
     win_perc = won/(won+lost)
     return steps, rewards_per_episode, Q, win_perc
+
+
+b = BallBalancingTable()
+steps, rewards, Q, win_perc = q_learning_trial_run(b, num_episodes, 0.99, 0.01, 0.5)
+print("Win Percentage: " + str(win_perc*100) + "%")
+
+# plt.plot(rewards)
+# plt.xlabel("Episodes")
+# plt.ylabel("Rewards")
+# plt.show()
+# plt.figure()
+# plt.plot(steps)
+# plt.xlabel("Steps")
+# plt.ylabel("Total # of Episodes")
+# plt.show()
+
+fin_Q = dict(Q)
+with open('Policies/q_learning.pickle', 'wb') as f:
+    pickle.dump(fin_Q, f)
+
