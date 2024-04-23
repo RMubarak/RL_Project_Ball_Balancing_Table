@@ -69,29 +69,3 @@ def action_prob(Q: defaultdict, state: Tuple[int,int], action: int, epsilon: flo
     
     return prob
 
-# def create_epsilon_policy(Q: defaultdict, epsilon: float) -> Callable:
-#     """Creates an epsilon soft policy from Q values.
-
-#     A policy is represented as a function here because the policies are simple. More complex policies can be represented using classes.
-
-#     Args:
-#         Q (defaultdict): current Q-values
-#         epsilon (float): softness parameter
-#     Returns:
-#         get_action (Callable): Takes a state as input and outputs an action
-#     """
-
-#     num_actions = len(Q[0])
-#     def get_action(state: Tuple) -> int:
-#         if np.random.random() < epsilon:
-#             action = np.random.choice(num_actions)
-#         else:
-#             try: # In case the state has not been seen before
-#                 action = np.max(Q[state])
-#                 max_action = np.argwhere(Q[state]==action).flatten()
-#                 action = np.random.choice(max_action)
-#             except:
-#                 action = np.random.choice(num_actions)
-#         return action
-
-#     return get_action
