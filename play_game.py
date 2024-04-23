@@ -17,14 +17,14 @@ num_episodes = 1000
 time_lim = 5
 filepath = None
 
-# Q-Learning
-filepath = 'Policies/q_learning_5s_L30.pickle'
+# # Q-Learning
+# filepath = 'Policies/q_learning_5s_L30.pickle'
 
 # # On-Policy Monte Carlo Control
-# filepath = 'Policies/on_policy_mc_control.pickle'
+# filepath = 'Policies/mc_control_5s.pickle'
 
-# # Expected SARSA
-# filepath = 'Policies/exp_sarsa.pickle'
+# Expected SARSA
+filepath = 'Policies/exp_sarsa_5s.pickle'
 
 
 
