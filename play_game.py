@@ -18,7 +18,8 @@ num_episodes = 1000
 time_lims = [1,2,3,4,5,6,8,10,15,30]
 filepaths = {}
 title = None
-noise = False # Whether you want to play the game with sensor noise or not
+noise = True # Whether you want to play the game with sensor noise or not
+noise_std = 0.005
 
 # NOTE: Make the dictionary keys equal to the legend labels
 
@@ -40,11 +41,11 @@ noise = False # Whether you want to play the game with sensor noise or not
 # filepaths["60s Training"]= 'Policies/mc_control_60s.pickle'
 # title = "MC Control Performance Vs Different Time Limits"
 
-# # Policy Comparison
-# filepaths["Q-Learning"]= 'Policies/q_learning_15s.pickle'
-# filepaths["MC Control"]= 'Policies/mc_control_60s.pickle'
-# filepaths["Exp SARSA"]= 'Policies/exp_sarsa_60s.pickle'
-# title = "Algorithm Performance Comparison"
+# Policy Comparison
+filepaths["Q-Learning"]= 'Policies/q_learning_15s.pickle'
+filepaths["MC Control"]= 'Policies/mc_control_60s.pickle'
+filepaths["Exp SARSA"]= 'Policies/exp_sarsa_60s.pickle'
+title = "Algorithm Performance Comparison with Sensor Noise"
 
 def play_game(
     env: gym.Env,
@@ -98,7 +99,7 @@ def play_game(
     return steps, total_rewards,win_perc
 
 
-
+# Runs all the filepaths
 for key in filepaths.keys():
     with open(filepaths[key], 'rb') as f:
         Q = pickle.load(f)
@@ -106,7 +107,7 @@ for key in filepaths.keys():
     tot_rew = []
     tot_win_p = []
     for t in time_lims:
-        b = BallBalancingTable(time_limit=t, sensor_noise=noise)
+        b = BallBalancingTable(time_limit=t, sensor_noise=noise, sensor_std=noise_std)
         steps, rewards, win_perc = play_game(b, num_episodes, Q)
         tot_rew.append(rewards)
         tot_win_p.append(win_perc*100)
@@ -116,6 +117,7 @@ for key in filepaths.keys():
     plt.figure(2)
     plt.plot(time_lims, tot_rew, label=key)
 
+# Plots
 plt.figure(1)
 plt.title(title)
 plt.xlabel("Time Limit (s)")
