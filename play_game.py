@@ -6,25 +6,31 @@ from env import BallBalancingTable
 import matplotlib.pyplot as plt 
 
 '''
-This will play the game using a loaded Q dictionary for num_episodes and and output the win percentage and total rewards of the policy.
+This will play the game using loaded Q dictionaries for num_episodes and and output the win percentage and total rewards of the policy. It will also plot the play performance over several win conditions. 
 You can choose how many episodes the agent will play and what the time limit is to define success.
-These policies were trained for 1,000,000 episodes with a time limit of 5 seconds on the table to define success.
+These policies were trained for 1,000,000 episodes.
+To run several policies, please add each filepath to the list of filepaths below.
 
 Please uncomment one of the lines below num_episode to choose which policy to use
 '''
 
 num_episodes = 1000
-time_lim = 5
-filepath = None
+time_lims = [1,2,3,4,5,6,8,10,15,30]
+filepaths = {}
+# Add your graph titles here
+title = "Q-Learning Performance Vs Different Time Limits"
 
-# # Q-Learning
-# filepath = 'Policies/q_learning_5s_L30.pickle'
+# Q-Learning: Make the dictionary keys equal to the legend labels
+filepaths["5s Training"]= 'Policies/q_learning_5s_L30.pickle'
+filepaths["15s Training"]= 'Policies/q_learning_15s_L30.pickle'
+filepaths["60s Training"]= 'Policies/q_learning_60s_L30.pickle'
+
 
 # # On-Policy Monte Carlo Control
-# filepath = 'Policies/mc_control_5s.pickle'
+# filepaths.append('Policies/mc_control_5s.pickle')
 
 # Expected SARSA
-filepath = 'Policies/exp_sarsa_5s.pickle'
+# filepaths.append('Policies/exp_sarsa_5s.pickle')
 
 
 
@@ -81,11 +87,35 @@ def play_game(
 
 
 
-with open(filepath, 'rb') as f:
-    Q = pickle.load(f)
+for key in filepaths.keys():
+    with open(filepaths[key], 'rb') as f:
+        Q = pickle.load(f)
     
-b = BallBalancingTable(time_limit=time_lim)
-steps, rewards, win_perc = play_game(b, num_episodes, Q)
+    tot_rew = []
+    tot_win_p = []
+    for t in time_lims:
+        b = BallBalancingTable(time_limit=t)
+        steps, rewards, win_perc = play_game(b, num_episodes, Q)
+        tot_rew.append(rewards)
+        tot_win_p.append(win_perc*100)
+    plt.figure(1)
+    plt.plot(time_lims, tot_win_p, label=key)
+    
+    plt.figure(2)
+    plt.plot(time_lims, tot_rew, label=key)
 
-print("Win Percentage Over " + str(num_episodes) + " Episodes is: " + str(win_perc*100) + "%")
-print("Total Rewards Over " + str(num_episodes) + " Episodes is: " + str(rewards))
+plt.figure(1)
+plt.title(title)
+plt.xlabel("Time Limit (s)")
+plt.ylabel("Win Percentage Over 1000 Games (%)")    
+plt.legend()
+plt.grid(which='both', linestyle='--', linewidth=0.5)
+# plt.show()
+
+plt.figure(2)
+plt.title(title)
+plt.xlabel("Time Limit (s)")
+plt.ylabel("Total Rewards Over 1000 Games (%)")    
+plt.legend()
+plt.grid(which='both', linestyle='--', linewidth=0.5)
+plt.show()
