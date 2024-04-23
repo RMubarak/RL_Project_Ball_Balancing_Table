@@ -4,7 +4,7 @@ from env import  *
 from policy import *
 import matplotlib.pyplot as plt
 import pickle
-from myalgs import *
+from algorithms import *
 
 '''
 Trains all policies for num_episodes (please set below).
