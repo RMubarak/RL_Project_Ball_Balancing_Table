@@ -17,21 +17,27 @@ Please uncomment one of the lines below num_episode to choose which policy to us
 num_episodes = 1000
 time_lims = [1,2,3,4,5,6,8,10,15,30]
 filepaths = {}
-# Add your graph titles here
+title = None
+
+# NOTE: Make the dictionary keys equal to the legend labels
+
+# Q-Learning: 
+filepaths["5s Training"]= 'Policies/q_learning_5s.pickle'
+filepaths["15s Training"]= 'Policies/q_learning_15s.pickle'
+filepaths["60s Training"]= 'Policies/q_learning_60s.pickle'
 title = "Q-Learning Performance Vs Different Time Limits"
 
-# Q-Learning: Make the dictionary keys equal to the legend labels
-filepaths["5s Training"]= 'Policies/q_learning_5s_L30.pickle'
-filepaths["15s Training"]= 'Policies/q_learning_15s_L30.pickle'
-filepaths["60s Training"]= 'Policies/q_learning_60s_L30.pickle'
-
+# # Expected SARSA
+# filepaths["5s Training"]= 'Policies/exp_sarsa_5s.pickle'
+# filepaths["15s Training"]= 'Policies/exp_sarsa_15s.pickle'
+# filepaths["60s Training"]= 'Policies/exp_sarsa_60s.pickle'
+# title = "Exp SARSA Performance Vs Different Time Limits"
 
 # # On-Policy Monte Carlo Control
-# filepaths.append('Policies/mc_control_5s.pickle')
-
-# Expected SARSA
-# filepaths.append('Policies/exp_sarsa_5s.pickle')
-
+# filepaths["5s Training"]= 'Policies/mc_control_5s.pickle'
+# filepaths["15s Training"]= 'Policies/mc_control_15s.pickle'
+# filepaths["60s Training"]= 'Policies/mc_control_60s.pickle'
+# title = "MC Control Performance Vs Different Time Limits"
 
 
 def play_game(
