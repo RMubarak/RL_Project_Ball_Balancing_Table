@@ -13,12 +13,12 @@ These policies were trained for 1,000,000 episodes with a time limit of 5 second
 Please uncomment one of the lines below num_episode to choose which policy to use
 '''
 
-num_episodes = 10000
-time_lim = 5.0
+num_episodes = 1000
+time_lim = 5
 filepath = None
 
 # Q-Learning
-filepath = 'Policies/q_learning.pickle'
+filepath = 'Policies/q_learning_5s_L30.pickle'
 
 
 
