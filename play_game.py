@@ -20,6 +20,11 @@ filepath = None
 # Q-Learning
 filepath = 'Policies/q_learning_5s_L30.pickle'
 
+# # On-Policy Monte Carlo Control
+# filepath = 'Policies/on_policy_mc_control.pickle'
+
+# # Expected SARSA
+# filepath = 'Policies/exp_sarsa.pickle'
 
 
 

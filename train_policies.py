@@ -22,6 +22,27 @@ steps, rewards, Q, win_perc = q_learning(b, num_episodes, 0.99, 0.01, 0.5)
 fin_Q = dict(Q)
 with open('Policies/q_learning_60s_3mil_L30.pickle', 'wb') as f:
     pickle.dump(fin_Q, f)
+    
+
+# '''
+# On-Policy Monte Carlo Control Section: This will replace the existing policy. Please make sure to name it differently if you do not want to lose the work!
+# '''
+# steps, rewards, Q, win_perc = on_policy_mc_control(b, num_episodes)
+
+# # Save the resulting Q-values
+# fin_Q = dict(Q)
+# with open('Policies/on_policy_mc_control.pickle', 'wb') as f:
+#     pickle.dump(fin_Q, f)
+
+# '''
+# Expected SARSA Section: This will replace the existing policy. Please make sure to name it differently if you do not want to lose the work!
+# '''
+# steps, rewards, Q, win_perc = exp_sarsa(b, num_episodes, 0.99, 0.01, 0.5)
+
+# # Save the resulting Q-values
+# fin_Q = dict(Q)
+# with open('Policies/exp_sarsa.pickle', 'wb') as f:
+#     pickle.dump(fin_Q, f)
 
 
 
